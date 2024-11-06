@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Protection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        input[type="file"], input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Password Protect Your PDF</h2>
+        <form method="post" id="yourFormId" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" id="fileInput" name="file_name" required>
+            <input type="password" id="passwordInput" name="password" placeholder="Enter password" required>
+            <button type="submit">Protect PDF</button>
+        </form>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        // Function to get the CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if this cookie string begins with the name we want
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        // Submit function to handle the form submission
+        async function submitForm(event) {
+            event.preventDefault(); // Prevent default form submission
+    
+            const fileInput = document.getElementById('fileInput').files[0];
+            const passwordInput = document.getElementById('passwordInput').value;
+    
+            // Prepare the form data
+            const formData = new FormData();
+            formData.append('file_name', fileInput);
+            formData.append('password', passwordInput);
+    
+            const csrftoken = getCookie('csrftoken'); // Get the CSRF token
+    
+            // Make the POST request
+            const response = await fetch('/api/protect-pdf/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken, // Include the CSRF token in the header
+                },
+                body: formData, // Send the form data
+            });
+    
+            // Handle the response
+            if (response.ok) {
+                const data = await response.json();
+                alert('PDF protected successfully! File URL: ' + data.file_url);
+            } else {
+                const errorData = await response.json();
+                alert('Error: ' + errorData.message);
+            }
+        }
+    
+        // Attach the submit function to your form
+        document.getElementById('yourFormId').addEventListener('submit', submitForm);
+    </script>
+    
+</body>
+</html>
+
+
+
