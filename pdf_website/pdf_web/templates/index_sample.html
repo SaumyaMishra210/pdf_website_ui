@@ -1,0 +1,67 @@
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const pdfFile = document.getElementById('pdfUpload').files[0];
+        if (!pdfFile) {
+            alert('Please select a PDF file');
+            return;
+        }
+
+        if (pdfFile.size > 5 * 1024 * 1024) {  // Check for max size (5MB)
+            alert('File size must be less than 5MB');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', pdfFile);
+
+        // Display the progress bar
+        const progressBar = document.getElementById('uploadProgress');
+        progressBar.classList.remove('d-none');
+        const progressBarInner = progressBar.querySelector('.progress-bar');
+
+        try {
+            // Step 1: Upload the file and get the upload ID
+            const uploadResponse = await fetch('/upload/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!uploadResponse.ok) {
+                throw new Error('File upload failed.');
+            }
+
+            const { upload_id } = await uploadResponse.json();
+
+            // Step 2: Poll for progress using the upload_id
+            const interval = setInterval(async () => {
+                const progressResponse = await fetch(`/upload/progress/${upload_id}/`);
+                
+                if (!progressResponse.ok) {
+                    clearInterval(interval);
+                    throw new Error('Failed to fetch progress.');
+                }
+
+                const { progress } = await progressResponse.json();
+                
+                // Update the progress bar
+                progressBarInner.style.width = progress + '%';
+                progressBarInner.setAttribute('aria-valuenow', progress);
+
+                // Check if upload is complete
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    alert('Upload complete!');
+                    progressBar.classList.add('d-none');
+                    e.target.reset();
+                }
+            }, 500); // Poll every 500ms
+
+        } catch (error) {
+            console.error(error);
+            alert('There was an error with the upload.');
+            progressBar.classList.add('d-none'); // Hide progress bar on error
+        }
+    });
+</script>

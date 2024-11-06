@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Upload</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #014E4E;  /* Dark teal */
+            --secondary-color: #70B6B6; /* Light teal */
+            --bg-color: #B5DCDC;       /* Lightest teal */
+        }
+        
+        body {
+            background-color: var(--bg-color) !important;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color) !important;
+        }
+        
+        .card-header {
+            background-color: var(--primary-color) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #016666 !important;
+            border-color: #016666 !important;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.25rem rgba(112, 182, 182, 0.25);
+        }
+        
+        .progress-bar {
+            background-color: var(--primary-color);
+        }
+        
+        .nav-link.active {
+            background-color: var(--secondary-color) !important;
+            color: var(--primary-color) !important;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">My Website</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="register.html">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Upload PDF</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header text-white">
+                        <h3 class="mb-0">PDF Upload</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="uploadForm">
+                            <div class="mb-4">
+                                <label for="pdfUpload" class="form-label">Choose PDF File</label>
+                                <input type="file" class="form-control" id="pdfUpload" accept=".pdf" required>
+                                <div class="form-text">Maximum file size: 5MB</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Password (Optional)</label>
+                                <textarea class="form-control" id="description" rows="3"></textarea>
+                            </div>
+                            <div class="progress mb-3 d-none" id="uploadProgress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">Upload PDF</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const pdfFile = document.getElementById('pdfUpload').files[0];
+            if (!pdfFile) {
+                alert('Please select a PDF file');
+                return;
+            }
+
+            if (pdfFile.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+
+            const progressBar = document.getElementById('uploadProgress');
+            progressBar.classList.remove('d-none');
+            const progressBarInner = progressBar.querySelector('.progress-bar');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBarInner.style.width = progress + '%';
+                progressBarInner.setAttribute('aria-valuenow', progress);
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    alert('Upload successful! (This is a demo - no actual upload occurred)');
+                    progressBar.classList.add('d-none');
+                    e.target.reset();
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>
